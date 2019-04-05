@@ -28,24 +28,32 @@ StopSearchBlack <- subset(StopSearch, Ethnicity == "Black" & Time=="2017/18", se
 
 levels_map <- merge(policeForce_map_shp, StopSearchBlack, by.x = "pfa16nm", by.y="Geography")
 
-#bins <- c(1,2,3,4)
-colours <- c("#FA2424", "#1BA9F0", "#FFD700", "#59AF56")
-pal <- colorFactor(colours, domain= levels_map$Rate.per.1.000.population.by.ethnicity)
+bins <- c(0, 5, 15, 20, 25, 30, 35, 40, 45, 50, Inf)
+pal <- colorBin("BuPu", domain = levels_map$`Rate per 1,000 population by ethnicity`, bins = bins)
 
-count_map <- leaflet(levels_map) %>%
-  addPolygons(fillColor = ~pal(Rate.per.1.000.population.by.ethnicity),
-              weight = .3,
+
+#pal = colorFactor(colours, domain = levels_map$`Rate per 1,000 population by ethnicity`)
+
+labels <- sprintf(
+  "<strong>Area: %s</strong><br/>Rate: %s",
+  levels_map$pfa16nm, ss_map$`Rate per 1,000 population by ethnicity`
+) %>% lapply(htmltools::HTML)
+
+
+leaflet(data = levels_map) %>%
+  addPolygons(fillColor = ~pal(`Rate per 1,000 population by ethnicity`),
+              weight = 2,
               opacity = 1,
-              color = "#808080",
-              dashArray = "1",
+              color = "white",
+              dashArray = "3",
               fillOpacity = 0.7,
               highlight = highlightOptions(
-                weight = 1.5,
-                color = "White",
+                weight = 5,
+                color = "#666",
                 dashArray = "",
                 fillOpacity = 0.7,
-                bringToFront = TRUE)) %>%
-  addLegend(pal = pal, values = ~Rate.per.1.000.population.by.ethnicity, opacity = 0.7, title = "Rate per population",
-            position = "bottomleft")
+                bringToFront = TRUE),
+              label = labels) %>%
+              addLegend(pal = pal, values = ~`Rate per 1,000 population by ethnicity`, opacity = 0.7, title = NULL,
+                        position = "bottomright")
 
-count_map
